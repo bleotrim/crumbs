@@ -16,7 +16,7 @@
 
         var collector = new FileCollector();
         var analyzer = new FileAnalyzer();
-        var exporter = new FileDetailExporter();
+        var exporter = new DiskContentDetailExporter();
 
         // Get all files
         var filePaths = collector.GetFiles(@"/Users/leotrim/Downloads", "*.*", SearchOption.AllDirectories);
@@ -62,7 +62,7 @@
     {
         var collector = new FileCollector();
         var analyzer = new FileAnalyzer();
-        var exporter = new FileDetailExporter();
+        var exporter = new DiskContentDetailExporter();
 
         // Load existing list
         var fileList = exporter.LoadFromJson(configuration.FilePath);
@@ -115,7 +115,7 @@
     public static void RemoveFilesNotOnDisk(Configuration configuration)
     {
         var collector = new FileCollector();
-        var exporter = new FileDetailExporter();
+        var exporter = new DiskContentDetailExporter();
 
         // Load list from JSON
         var fileList = exporter.LoadFromJson(configuration.FilePath);

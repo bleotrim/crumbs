@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-public class FileDetailExporter
+public class DiskContentDetailExporter
 {
     /// <summary>
     /// Saves a list of FileDetail to a JSON file.
