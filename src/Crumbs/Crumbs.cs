@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
 public class Crumbs
 {
     private readonly Configuration _configuration;
@@ -11,7 +6,6 @@ public class Crumbs
     private readonly DiskContentDetailExporter _exporter;
     private readonly SimpleLogger _logger;
     private List<string> _filesOnDisk = new List<string>();
-
     public Crumbs(Configuration configuration, SimpleLogger logger)
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -20,11 +14,13 @@ public class Crumbs
         _analyzer = new FileAnalyzer();
         _exporter = new DiskContentDetailExporter();
     }
-
-    public void Run()
+    public void Run(string path)
     {
-        _logger.Info("Starting Crumbs scan...");
-        _filesOnDisk = _collector.GetFiles(@"c:\_work", "*.*", SearchOption.AllDirectories);
+        if (string.IsNullOrWhiteSpace(path))
+            throw new ArgumentException("Path cannot be null or empty.", nameof(path));
+
+        _logger.Info($"Starting Crumbs scan for path: {path}");
+        _filesOnDisk = _collector.GetFiles(path, "*.*", SearchOption.AllDirectories);
         _logger.Info($"Collected {_filesOnDisk.Count} files from disk.");
 
         CreateFileListIfNotExist();
@@ -33,7 +29,6 @@ public class Crumbs
 
         _logger.Info("Crumbs scan completed.");
     }
-
     private void CreateFileListIfNotExist()
     {
         if (File.Exists(_configuration.FilePath))
@@ -78,10 +73,9 @@ public class Crumbs
         _logger.Info($"Initial file list saved: {_configuration.FilePath}");
         _logger.Info($"Successfully analyzed: {successCount}, errors: {errorCount}");
     }
-
     private void AddNewFilesOnDisk()
     {
-        _logger.Info("Checking for new files to add...");
+        _logger.Info("Checking for files to add...");
         var fileList = _exporter.LoadFromJson(_configuration.FilePath);
         var existingFilePaths = new HashSet<string>(fileList.FileDetails.Select(f => f.Path), StringComparer.OrdinalIgnoreCase);
         int addedCount = 0;
@@ -89,7 +83,7 @@ public class Crumbs
         for (int i = 0; i < _filesOnDisk.Count; i++)
         {
             var filePath = _filesOnDisk[i];
-            Console.Write($"\rChecking file {i + 1}/{_filesOnDisk.Count}...");
+            Console.Write($"\rChecking file to add {i + 1}/{_filesOnDisk.Count}...");
             if (!existingFilePaths.Contains(filePath))
             {
                 try
@@ -121,14 +115,13 @@ public class Crumbs
         _exporter.SaveToJson(updatedDetail, _configuration.FilePath);
 
         if (addedCount > 0)
-            _logger.Info($"Added {addedCount} new files to the list.");
+            _logger.Info($"Operation completed. Added {addedCount} files.");
         else
-            _logger.Info("No new files to add.");
+            _logger.Info($"Operation completed. Added {addedCount} files.");
     }
-
     private void RemoveFilesNotOnDisk()
     {
-        _logger.Info("Checking for files no longer on disk...");
+        _logger.Info("Checking for files to remove...");
         var fileList = _exporter.LoadFromJson(_configuration.FilePath);
         var filesOnDiskSet = new HashSet<string>(_filesOnDisk, StringComparer.OrdinalIgnoreCase);
 
@@ -145,7 +138,7 @@ public class Crumbs
                 removedCount++;
             }
             if (i % 1000 == 0 || i == total - 1)
-                Console.Write($"\rVerifying file {i + 1}/{total}...");
+                Console.Write($"\rChecking file to remove {i + 1}/{total}...");
         }
         Console.WriteLine();
 
@@ -153,7 +146,7 @@ public class Crumbs
         {
             _logger.Info("Files removed from list because they are no longer present on disk:");
             foreach (var removed in removedFiles)
-                _logger.Info($"- {removed.Path}");
+                _logger.Info($"To remove: {removed.Path}");
         }
 
         fileList.FileDetails.RemoveAll(f => !filesOnDiskSet.Contains(f.Path));
