@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 public class Configuration
 {
     public string FilePath { get; set; } = "no file path available";
+    public string LogFile { get; set; } = "";
 
     public Configuration()
     {
@@ -12,5 +13,6 @@ public class Configuration
             .Build();
 
         FilePath = configuration["Configuration:FilePath"] ?? FilePath;
+        LogFile = configuration["Configuration:LogPath"] ?? LogFile;
     }
 }
