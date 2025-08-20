@@ -5,7 +5,6 @@ public class FileDetail
     public long SizeInBytes { get; set; }
     public DateTime Created { get; set; }
     public DateTime Modified { get; set; }
-    public bool Checked { get; set; }
     public DateTime LastHashCheckUtc { get; set; }
     public DateTime AddedUtc { get; set; }
 }
