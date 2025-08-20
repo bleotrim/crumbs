@@ -96,6 +96,7 @@ public class Crumbs
         var fileList = _exporter.LoadFromJson(_configuration.FileList);
         var existingFilePaths = new HashSet<string>(fileList.FileDetails.Select(f => f.Path), StringComparer.OrdinalIgnoreCase);
         int addedCount = 0;
+        var addedFiles = new List<FileDetail>();
 
         for (int i = 0; i < _filesOnDisk.Count; i++)
         {
@@ -110,6 +111,7 @@ public class Crumbs
                     {
                         fileList.FileDetails.Add(fd);
                         existingFilePaths.Add(filePath);
+                        addedFiles.Add(fd);
                         addedCount++;
                     }
                 }
