@@ -3,7 +3,7 @@ public class Crumbs
     private readonly Configuration _configuration;
     private readonly FileCollector _collector;
     private readonly FileAnalyzer _analyzer;
-    private readonly DiskContentDetailExporter _exporter;
+    private readonly DiskContentExporter _exporter;
     private readonly SimpleLogger _logger;
     private List<string> _filesOnDisk = new List<string>();
     public Crumbs(Configuration configuration, SimpleLogger logger)
@@ -12,32 +12,32 @@ public class Crumbs
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _collector = new FileCollector();
         _analyzer = new FileAnalyzer();
-        _exporter = new DiskContentDetailExporter();
+        _exporter = new DiskContentExporter();
     }
     public void Run(string path)
     {
         if (string.IsNullOrWhiteSpace(path))
             throw new ArgumentException("Path cannot be null or empty.", nameof(path));
 
-        _logger.Info($"Starting Crumbs scan for path: {path}");
+        _logger.LogInfo($"Starting Crumbs scan for path: {path}");
         _filesOnDisk = _collector.GetFiles(path, "*.*", SearchOption.AllDirectories);
-        _logger.Info($"Collected {_filesOnDisk.Count} files from disk.");
+        _logger.LogInfo($"Collected {_filesOnDisk.Count} files from disk.");
 
         CreateFileListIfNotExist();
         AddNewFilesOnDisk();
         RemoveFilesNotOnDisk();
 
-        _logger.Info("Crumbs scan completed.");
+        _logger.LogInfo("Crumbs scan completed.");
     }
     private void CreateFileListIfNotExist()
     {
         if (File.Exists(_configuration.FilePath))
         {
-            _logger.Info("File list already exists, skipping creation.");
+            _logger.LogInfo("File list already exists, skipping creation.");
             return;
         }
 
-        _logger.Info("Creating initial file list...");
+        _logger.LogInfo("Creating initial file list...");
         var details = new List<FileDetail>();
         int successCount = 0;
         int errorCount = 0;
@@ -54,13 +54,13 @@ public class Crumbs
             }
             catch (Exception ex)
             {
-                _logger.Error($"Error analyzing {path}: {ex.Message}");
+                _logger.LogError($"Error analyzing {path}: {ex.Message}");
                 errorCount++;
             }
         }
         Console.WriteLine();
 
-        var diskContentDetail = new DiskContentDetail
+        var diskContent = new DiskContent
         {
             SerialNumber = "serial",
             PartNumber = "part",
@@ -69,13 +69,13 @@ public class Crumbs
             TotalFileSize = details.Sum(f => f.SizeInBytes)
         };
 
-        _exporter.SaveToJson(diskContentDetail, _configuration.FilePath);
-        _logger.Info($"Initial file list saved: {_configuration.FilePath}");
-        _logger.Info($"Successfully analyzed: {successCount}, errors: {errorCount}");
+        _exporter.SaveToJson(diskContent, _configuration.FilePath);
+        _logger.LogInfo($"Initial file list saved: {_configuration.FilePath}");
+        _logger.LogInfo($"Successfully analyzed: {successCount}, errors: {errorCount}");
     }
     private void AddNewFilesOnDisk()
     {
-        _logger.Info("Checking for files to add...");
+        _logger.LogInfo("Checking for files to add...");
         var fileList = _exporter.LoadFromJson(_configuration.FilePath);
         var existingFilePaths = new HashSet<string>(fileList.FileDetails.Select(f => f.Path), StringComparer.OrdinalIgnoreCase);
         int addedCount = 0;
@@ -98,13 +98,13 @@ public class Crumbs
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error($"Error analyzing {filePath}: {ex.Message}");
+                    _logger.LogError($"Error analyzing {filePath}: {ex.Message}");
                 }
             }
         }
         Console.WriteLine();
 
-        var updatedDetail = new DiskContentDetail
+        var updatedDetail = new DiskContent
         {
             SerialNumber = "serial",
             PartNumber = "part",
@@ -115,13 +115,13 @@ public class Crumbs
         _exporter.SaveToJson(updatedDetail, _configuration.FilePath);
 
         if (addedCount > 0)
-            _logger.Info($"Operation completed. Added {addedCount} files.");
+            _logger.LogInfo($"Operation completed. Added {addedCount} files.");
         else
-            _logger.Info($"Operation completed. Added {addedCount} files.");
+            _logger.LogInfo($"Operation completed. Added {addedCount} files.");
     }
     private void RemoveFilesNotOnDisk()
     {
-        _logger.Info("Checking for files to remove...");
+        _logger.LogInfo("Checking for files to remove...");
         var fileList = _exporter.LoadFromJson(_configuration.FilePath);
         var filesOnDiskSet = new HashSet<string>(_filesOnDisk, StringComparer.OrdinalIgnoreCase);
 
@@ -144,9 +144,9 @@ public class Crumbs
 
         if (removedFiles.Any())
         {
-            _logger.Info("Files removed from list because they are no longer present on disk:");
+            _logger.LogInfo("Files removed from list because they are no longer present on disk:");
             foreach (var removed in removedFiles)
-                _logger.Info($"To remove: {removed.Path}");
+                _logger.LogInfo($"To remove: {removed.Path}");
         }
 
         fileList.FileDetails.RemoveAll(f => !filesOnDiskSet.Contains(f.Path));
@@ -154,6 +154,6 @@ public class Crumbs
         fileList.TotalFileSize = fileList.FileDetails.Sum(f => f.SizeInBytes);
 
         _exporter.SaveToJson(fileList, _configuration.FilePath);
-        _logger.Info($"Operation completed. Removed {removedCount} files.");
+        _logger.LogInfo($"Operation completed. Removed {removedCount} files.");
     }
 }
