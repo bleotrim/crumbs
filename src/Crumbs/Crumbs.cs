@@ -16,22 +16,39 @@ public class Crumbs
     }
     public void Run(string path)
     {
-        if (string.IsNullOrWhiteSpace(path))
-            throw new ArgumentException("Path cannot be null or empty.", nameof(path));
+        try
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentException(
+                    "Path where to scan files cannot be null or empty. Application will exit.",
+                    nameof(path));
+            }
 
-        _logger.LogInfo($"Starting Crumbs scan for path: {path}");
-        _filesOnDisk = _collector.GetFiles(path, "*.*", SearchOption.AllDirectories);
-        _logger.LogInfo($"Collected {_filesOnDisk.Count} files from disk.");
+            if (!Directory.Exists(path))
+            {
+                throw new DirectoryNotFoundException($"The specified path does not exist: {path}");
+            }
 
-        CreateFileListIfNotExist();
-        AddNewFilesOnDisk();
-        RemoveFilesNotOnDisk();
+            _logger.LogInfo($"Starting Crumbs scan for path: {path}");
+            _filesOnDisk = _collector.GetFiles(path, "*.*", SearchOption.AllDirectories);
+            _logger.LogInfo($"Collected {_filesOnDisk.Count} files from disk.");
 
-        _logger.LogInfo("Crumbs scan completed.");
+            CreateFileListIfNotExist();
+            AddNewFilesOnDisk();
+            RemoveFilesNotOnDisk();
+
+            _logger.LogInfo("Crumbs scan completed.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"{ex.Message}{ex.StackTrace}");
+            throw;
+        }
     }
     private void CreateFileListIfNotExist()
     {
-        if (File.Exists(_configuration.FilePath))
+        if (File.Exists(_configuration.FileList))
         {
             _logger.LogInfo("File list already exists, skipping creation.");
             return;
@@ -69,14 +86,14 @@ public class Crumbs
             TotalFileSize = details.Sum(f => f.SizeInBytes)
         };
 
-        _exporter.SaveToJson(diskContent, _configuration.FilePath);
-        _logger.LogInfo($"Initial file list saved: {_configuration.FilePath}");
+        _exporter.SaveToJson(diskContent, _configuration.FileList);
+        _logger.LogInfo($"Initial file list saved: {_configuration.FileList}");
         _logger.LogInfo($"Successfully analyzed: {successCount}, errors: {errorCount}");
     }
     private void AddNewFilesOnDisk()
     {
         _logger.LogInfo("Checking for files to add...");
-        var fileList = _exporter.LoadFromJson(_configuration.FilePath);
+        var fileList = _exporter.LoadFromJson(_configuration.FileList);
         var existingFilePaths = new HashSet<string>(fileList.FileDetails.Select(f => f.Path), StringComparer.OrdinalIgnoreCase);
         int addedCount = 0;
 
@@ -104,7 +121,7 @@ public class Crumbs
         }
         Console.WriteLine();
 
-        var updatedDetail = new DiskContent
+        var updatedDiskContent = new DiskContent
         {
             SerialNumber = "serial",
             PartNumber = "part",
@@ -112,17 +129,14 @@ public class Crumbs
             FileCount = fileList.FileDetails.Count,
             TotalFileSize = fileList.FileDetails.Sum(f => f.SizeInBytes)
         };
-        _exporter.SaveToJson(updatedDetail, _configuration.FilePath);
 
-        if (addedCount > 0)
-            _logger.LogInfo($"Operation completed. Added {addedCount} files.");
-        else
-            _logger.LogInfo($"Operation completed. Added {addedCount} files.");
+        _exporter.SaveToJson(updatedDiskContent, _configuration.FileList);
+        _logger.LogInfo($"Operation completed. Added {addedCount} files.");
     }
     private void RemoveFilesNotOnDisk()
     {
         _logger.LogInfo("Checking for files to remove...");
-        var fileList = _exporter.LoadFromJson(_configuration.FilePath);
+        var fileList = _exporter.LoadFromJson(_configuration.FileList);
         var filesOnDiskSet = new HashSet<string>(_filesOnDisk, StringComparer.OrdinalIgnoreCase);
 
         int total = fileList.FileDetails.Count;
@@ -153,7 +167,7 @@ public class Crumbs
         fileList.FileCount = fileList.FileDetails.Count;
         fileList.TotalFileSize = fileList.FileDetails.Sum(f => f.SizeInBytes);
 
-        _exporter.SaveToJson(fileList, _configuration.FilePath);
+        _exporter.SaveToJson(fileList, _configuration.FileList);
         _logger.LogInfo($"Operation completed. Removed {removedCount} files.");
     }
 }
