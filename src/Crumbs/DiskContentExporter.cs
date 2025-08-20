@@ -2,6 +2,12 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 public class DiskContentExporter
 {
+    private readonly SimpleLogger _logger;
+    public DiskContentExporter(SimpleLogger logger)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
     /// <summary>
     /// Saves a list of FileDetail to a JSON file.
     /// </summary>

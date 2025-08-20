@@ -12,7 +12,7 @@ public class Crumbs
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _collector = new FileCollector(logger);
         _analyzer = new FileAnalyzer(logger);
-        _exporter = new DiskContentExporter();
+        _exporter = new DiskContentExporter(logger);
     }
     public void Run(string path)
     {
