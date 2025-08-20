@@ -156,13 +156,6 @@ public class Crumbs
         }
         Console.WriteLine();
 
-        if (removedFiles.Any())
-        {
-            _logger.LogInfo("Files removed from list because they are no longer present on disk:");
-            foreach (var removed in removedFiles)
-                _logger.LogInfo($"To remove: {removed.Path}");
-        }
-
         fileList.FileDetails.RemoveAll(f => !filesOnDiskSet.Contains(f.Path));
         fileList.FileCount = fileList.FileDetails.Count;
         fileList.TotalFileSize = fileList.FileDetails.Sum(f => f.SizeInBytes);
