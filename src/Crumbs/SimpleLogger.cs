@@ -6,11 +6,11 @@ public class SimpleLogger
     {
         _logFilePath = logFilePath;
     }
-    public void Info(string message)
+    public void LogInfo(string message)
     {
         Log("INFO", message);
     }
-    public void Error(string message)
+    public void LogError(string message)
     {
         Log("ERROR", message);
     }
