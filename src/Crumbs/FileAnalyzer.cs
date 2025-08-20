@@ -2,6 +2,11 @@ using System.Security.Cryptography;
 
 public class FileAnalyzer
 {
+    private readonly SimpleLogger _logger;
+    public FileAnalyzer(SimpleLogger logger)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
     /// <summary>
     /// Converts a file path into a FileDetail object.
     /// </summary>
@@ -28,7 +33,7 @@ public class FileAnalyzer
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error analyzing {filePath}: {ex.Message}");
+            _logger.LogError($"Error analyzing file {filePath}: {ex.Message}");
             return null;
         }
     }

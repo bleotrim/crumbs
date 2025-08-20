@@ -11,7 +11,7 @@ public class Crumbs
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _collector = new FileCollector(logger);
-        _analyzer = new FileAnalyzer();
+        _analyzer = new FileAnalyzer(logger);
         _exporter = new DiskContentExporter();
     }
     public void Run(string path)
