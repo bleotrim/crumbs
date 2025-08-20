@@ -17,11 +17,11 @@ public class FileAnalyzer
 
             return new FileDetail
             {
-                FilePath = fi.FullName,
+                Path = fi.FullName,
                 Sha256 = hash,
                 SizeInBytes = fi.Length,
-                CreationDate = fi.CreationTimeUtc,
-                ModifiedDate = fi.LastWriteTimeUtc,
+                Created = fi.CreationTimeUtc,
+                Modified = fi.LastWriteTimeUtc,
                 LastHashCheckUtc = DateTime.UtcNow,
                 AddedUtc = DateTime.UtcNow
             };
