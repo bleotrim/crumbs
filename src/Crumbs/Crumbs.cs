@@ -32,7 +32,7 @@ public class Crumbs
 
             _logger.LogInfo($"Starting Crumbs scan for path: {path}");
             _filesOnDisk = _collector.GetFiles(path, "*.*", SearchOption.AllDirectories);
-            _logger.LogInfo($"Collected {_filesOnDisk.Count} files from disk.");
+            _logger.LogInfo($"Collected {_filesOnDisk.Count:N0} files from disk.");
 
             CreateFileListIfNotExist();
             AddNewFilesOnDisk();
@@ -62,7 +62,7 @@ public class Crumbs
         for (int i = 0; i < _filesOnDisk.Count; i++)
         {
             var path = _filesOnDisk[i];
-            Console.Write($"\rProcessing file {i + 1}/{_filesOnDisk.Count}...");
+            Console.Write($"\rProcessing file {i + 1:N0}/{_filesOnDisk.Count:N0}...");
             try
             {
                 var fd = _analyzer.Analyze(path);
@@ -100,7 +100,7 @@ public class Crumbs
         for (int i = 0; i < _filesOnDisk.Count; i++)
         {
             var filePath = _filesOnDisk[i];
-            Console.Write($"\rChecking file to add {i + 1}/{_filesOnDisk.Count}...");
+            Console.Write($"\rChecking file to add {i + 1:N0} of {_filesOnDisk.Count:N0}...");
             if (!existingFilePaths.Contains(filePath))
             {
                 try
@@ -131,7 +131,7 @@ public class Crumbs
         };
 
         _exporter.SaveToJson(updatedDiskContent, _configuration.FileList);
-        _logger.LogInfo($"Operation completed. Added {addedCount} files.");
+        _logger.LogInfo($"Operation completed. Added {addedCount:N0} files.");
     }
     private void RemoveFilesNotOnDisk()
     {
@@ -152,7 +152,7 @@ public class Crumbs
                 removedCount++;
             }
             if (i % 1000 == 0 || i == total - 1)
-                Console.Write($"\rChecking file to remove {i + 1}/{total}...");
+                Console.Write($"\rChecking file to remove {i + 1:N0} of {total:N0}...");
         }
         Console.WriteLine();
 
@@ -168,6 +168,6 @@ public class Crumbs
         fileList.TotalFileSize = fileList.FileDetails.Sum(f => f.SizeInBytes);
 
         _exporter.SaveToJson(fileList, _configuration.FileList);
-        _logger.LogInfo($"Operation completed. Removed {removedCount} files.");
+        _logger.LogInfo($"Operation completed. Removed {removedCount:N0} files.");
     }
 }
