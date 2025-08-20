@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 
 public class Configuration
 {
-    public string FilePath { get; set; } = "no file path available";
+    public string FileList { get; set; } = "no file path available";
     public string LogFile { get; set; } = "";
 
     public Configuration()
@@ -12,7 +12,7 @@ public class Configuration
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .Build();
 
-        FilePath = configuration["Configuration:FilePath"] ?? FilePath;
-        LogFile = configuration["Configuration:LogPath"] ?? LogFile;
+        FileList = configuration["Configuration:Crumbs:FileList"] ?? FileList;
+        LogFile = configuration["Configuration:Crumbs:LogFile"] ?? LogFile;
     }
 }
