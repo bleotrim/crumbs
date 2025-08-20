@@ -10,7 +10,7 @@ public class Crumbs
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _collector = new FileCollector();
+        _collector = new FileCollector(logger);
         _analyzer = new FileAnalyzer();
         _exporter = new DiskContentExporter();
     }
@@ -26,9 +26,7 @@ public class Crumbs
             }
 
             if (!Directory.Exists(path))
-            {
                 throw new DirectoryNotFoundException($"The specified path does not exist: {path}");
-            }
 
             _logger.LogInfo($"Starting Crumbs scan for path: {path}");
             _filesOnDisk = _collector.GetFiles(path, "*.*", SearchOption.AllDirectories);

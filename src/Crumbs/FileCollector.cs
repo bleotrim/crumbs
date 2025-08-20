@@ -1,5 +1,12 @@
 public class FileCollector
 {
+    private readonly SimpleLogger _logger;
+
+    public FileCollector(SimpleLogger logger)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
     /// <summary>
     /// Returns a list of files from a folder.
     /// </summary>
@@ -14,17 +21,17 @@ public class FileCollector
         try
         {
             if (Directory.Exists(directoryPath))
-            {
                 files.AddRange(Directory.GetFiles(directoryPath, searchPattern, searchOption));
-            }
             else
-            {
                 Console.WriteLine("The specified folder does not exist.");
-            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            _logger.LogError($"Access denied to directory: {directoryPath}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error while searching for files: {ex.Message}");
+            _logger.LogError($"An error occurred while collecting files: {ex.Message}");
         }
 
         return files;
