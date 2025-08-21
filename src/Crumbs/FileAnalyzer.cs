@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-
 public class FileAnalyzer
 {
     private readonly SimpleLogger _logger;
@@ -14,6 +13,9 @@ public class FileAnalyzer
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(filePath))
+                throw new ArgumentException("File path cannot be null or empty.", nameof(filePath));
+
             var fi = new FileInfo(filePath);
             var hash = ComputeSha256(filePath);
 
@@ -27,35 +29,29 @@ public class FileAnalyzer
                 SizeInBytes = fi.Length,
                 Created = fi.CreationTimeUtc,
                 Modified = fi.LastWriteTimeUtc,
-                LastHashCheckUtc = DateTime.UtcNow,
+                LastHashCheckUtc = null,
                 AddedUtc = DateTime.UtcNow
             };
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error analyzing file {filePath}: {ex.Message}");
+            _logger.LogError(ex.Message);
             return null;
         }
     }
-    public static string? ComputeSha256(string filePath)
+    private string? ComputeSha256(string filePath)
     {
         try
         {
-            using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            using (var sha = SHA256.Create())
-            {
-                var hash = sha.ComputeHash(stream);
-                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
-            }
+            using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using var sha = SHA256.Create();
+
+            var hash = sha.ComputeHash(stream);
+            return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
         }
-        catch (IOException ioEx)
+        catch (Exception ex)
         {
-            Console.WriteLine($"File in use, unable to compute hash: {filePath} ({ioEx.Message})");
-            return null;
-        }
-        catch (UnauthorizedAccessException unAuthEx)
-        {
-            Console.WriteLine($"Access denied: {filePath} ({unAuthEx.Message})");
+            _logger.LogError(ex.Message);
             return null;
         }
     }
