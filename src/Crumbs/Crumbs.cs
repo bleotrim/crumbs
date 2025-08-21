@@ -99,7 +99,7 @@ public class Crumbs
         for (int i = 0; i < _filesOnDisk.Count; i++)
         {
             var filePath = _filesOnDisk[i];
-            Console.Write($"\rChecking file to add {i + 1:N0} of {_filesOnDisk.Count:N0}...");
+            //Console.Write($"\rChecking file to add {i + 1:N0} of {_filesOnDisk.Count:N0}...");
             if (!existingFilePaths.Contains(filePath))
             {
                 try
@@ -119,7 +119,7 @@ public class Crumbs
                 }
             }
         }
-        Console.WriteLine();
+        //Console.WriteLine();
 
         var updatedDiskContent = new DiskContent
         {
@@ -151,10 +151,10 @@ public class Crumbs
                 removedFiles.Add(file);
                 removedCount++;
             }
-            if (i % 1000 == 0 || i == total - 1)
-                Console.Write($"\rChecking file to remove {i + 1:N0} of {total:N0}...");
+            //if (i % 1000 == 0 || i == total - 1)
+                //Console.Write($"\rChecking file to remove {i + 1:N0} of {total:N0}...");
         }
-        Console.WriteLine();
+        //Console.WriteLine();
 
         fileList.FileDetails.RemoveAll(f => !filesOnDiskSet.Contains(f.Path));
         fileList.FileCount = fileList.FileDetails.Count;
