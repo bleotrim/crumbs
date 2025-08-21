@@ -60,7 +60,6 @@ public class Crumbs
         for (int i = 0; i < _filesOnDisk.Count; i++)
         {
             var path = _filesOnDisk[i];
-            Console.Write($"\rProcessing file {i + 1:N0}/{_filesOnDisk.Count:N0}...");
             try
             {
                 var fd = _analyzer.Analyze(path);
@@ -73,7 +72,6 @@ public class Crumbs
                 errorCount++;
             }
         }
-        Console.WriteLine();
 
         var diskContent = new DiskContent
         {
