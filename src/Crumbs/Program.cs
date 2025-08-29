@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 class Program
 {
-    static async Task Main()
+    static async Task Main(string[] args)
     {
         var version = Assembly.GetExecutingAssembly().GetName().Version;
         Console.WriteLine($"Versione corrente: {version}");
@@ -29,10 +29,13 @@ class Program
             cts.Cancel();    // segnala la cancellazione
         };
 
+        string inputPath = args[0];
+        Console.WriteLine($"Selected Path: {inputPath}");
+
         try
         {
             // esegui su thread pool per non bloccare il main thread UI/console
-            await Task.Run(() => crumbs.Run(@"C:\_work", token), token);
+            await Task.Run(() => crumbs.Run(inputPath, token), token);
             Console.WriteLine("\nOperazione completata con successo.");
         }
         catch (OperationCanceledException)
