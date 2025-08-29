@@ -4,6 +4,7 @@ public class Configuration
 {
     public string FileList { get; set; } = "no file path available";
     public string LogFile { get; set; } = "";
+    public string SessionFolder { get; set; } = "";
 
     public Configuration()
     {
@@ -14,5 +15,6 @@ public class Configuration
 
         FileList = configuration["Configuration:Crumbs:FileList"] ?? FileList;
         LogFile = configuration["Configuration:Crumbs:LogFile"] ?? LogFile;
+        SessionFolder = configuration["Configuration:Crumbs:SessionFolder"] ?? LogFile;
     }
 }
