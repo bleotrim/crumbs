@@ -19,7 +19,7 @@ public class SimpleLogger
         var logLine = $"{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss.fff} [{level}] {message}";
         lock (_lock)
         {
-            Console.WriteLine(logLine);
+            Console.WriteLine($"\r{logLine}");
             File.AppendAllText(_logFilePath, logLine + Environment.NewLine);
         }
     }
