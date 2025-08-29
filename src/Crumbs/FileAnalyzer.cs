@@ -1,58 +1,41 @@
 using System.Security.Cryptography;
+
 public class FileAnalyzer
 {
     private readonly SimpleLogger _logger;
-    public FileAnalyzer(SimpleLogger logger)
+
+    public FileAnalyzer(SimpleLogger logger) 
+        => _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+    public FileDetail AnalyzeNewFile(string filePath, bool computeHash = true)
+        => AnalyzeFile(filePath, addedUtc: DateTime.UtcNow, computeHash);
+
+    public FileDetail AnalyzeModifiedFile(FileDetail previous)
+        => AnalyzeFile(previous.Path, addedUtc: previous.AddedUtc, computeHash: true, previous);
+
+    private FileDetail AnalyzeFile(string path, DateTime addedUtc, bool computeHash, FileDetail? previous = null)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        var fileInfo = new FileInfo(path);
+        var now = DateTime.UtcNow;
+
+        return new FileDetail
+        {
+            Path = fileInfo.FullName,
+            Sha256 = computeHash ? ComputeSha256(path) : string.Empty,
+            SizeInBytes = fileInfo.Length,
+            Created = fileInfo.CreationTimeUtc,
+            Modified = fileInfo.LastWriteTimeUtc,
+            CheckedUtc = now,
+            AddedUtc = addedUtc,
+            UpdatedUtc = previous != null ? now : null
+        };
     }
-    /// <summary>
-    /// Converts a file path into a FileDetail object.
-    /// </summary>
-    public FileDetail? Analyze(string filePath)
+
+    private string ComputeSha256(string filePath)
     {
-        try
-        {
-            if (string.IsNullOrWhiteSpace(filePath))
-                throw new ArgumentException("File path cannot be null or empty.", nameof(filePath));
-
-            var fi = new FileInfo(filePath);
-            var hash = ComputeSha256(filePath);
-
-            if (hash == null)
-                return null; // skip file if not readable
-
-            return new FileDetail
-            {
-                Path = fi.FullName,
-                Sha256 = hash,
-                SizeInBytes = fi.Length,
-                Created = fi.CreationTimeUtc,
-                Modified = fi.LastWriteTimeUtc,
-                LastHashCheckUtc = null,
-                AddedUtc = DateTime.UtcNow
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex.Message);
-            return null;
-        }
-    }
-    private string? ComputeSha256(string filePath)
-    {
-        try
-        {
-            using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            using var sha = SHA256.Create();
-
-            var hash = sha.ComputeHash(stream);
-            return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex.Message);
-            return null;
-        }
+        using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var sha = SHA256.Create();
+        var hashBytes = sha.ComputeHash(stream);
+        return Convert.ToHexString(hashBytes).ToLowerInvariant();
     }
 }
